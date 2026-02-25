@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Create Tender</h2>
+<form method="post" class="card form-grid">
+  <label>Title<input name="title" required /></label>
+  <label>Description<textarea name="description" required></textarea></label>
+  <label>Budget<input name="budget" type="number" min="1" step="0.01" /></label>
+  <label>Deadline<input name="deadline" type="date" /></label>
+  <button type="submit">Create Tender</button>
+</form>
+{% endblock %}
