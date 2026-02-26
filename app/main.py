@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
+
 from fastapi import FastAPI, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
@@ -17,9 +19,21 @@ from app.store import (
     list_tenders,
 )
 
-app = FastAPI(title="E-Procurement DSS", version="1.0.0")
+app = FastAPI(title="E-Procurement DSS", version="1.0.1")
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
+
+
+def _template_response(request: Request, name: str, context: Mapping[str, object]):
+    template_context = {"request": request, **context}
+    return templates.TemplateResponse(name, template_context)
+
+
+def _normalize_optional_float(raw: str | None) -> float | None:
+    if raw is None:
+        return None
+    value = raw.strip()
+    return float(value) if value else None
 
 
 @app.on_event("startup")
@@ -34,7 +48,7 @@ def health() -> dict[str, str]:
 
 @app.get("/")
 def home(request: Request):
-    return templates.TemplateResponse(
+    return _template_response(
         request,
         "index.html",
         {"stats": dashboard_stats(), "tenders": list_tenders()[:5]},
@@ -43,17 +57,24 @@ def home(request: Request):
 
 @app.get("/tenders/new")
 def new_tender_page(request: Request):
-    return templates.TemplateResponse(request, "new_tender.html", {})
+    return _template_response(request, "new_tender.html", {})
 
 
 @app.post("/tenders/new")
 def create_tender_form(
     title: str = Form(...),
     description: str = Form(...),
-    budget: float | None = Form(default=None),
+    budget: str | None = Form(default=None),
     deadline: str | None = Form(default=None),
 ):
-    tender = create_tender(TenderCreate(title=title, description=description, budget=budget, deadline=deadline))
+    tender = create_tender(
+        TenderCreate(
+            title=title,
+            description=description,
+            budget=_normalize_optional_float(budget),
+            deadline=deadline,
+        )
+    )
     return RedirectResponse(url=f"/tenders/{tender.id}", status_code=303)
 
 
@@ -63,7 +84,7 @@ def tender_detail(request: Request, tender_id: int):
     if not tender:
         raise HTTPException(status_code=404, detail="Tender not found")
     bids = list_bids_for_tender(tender_id)
-    return templates.TemplateResponse(request, "tender_detail.html", {"tender": tender, "bids": bids})
+    return _template_response(request, "tender_detail.html", {"tender": tender, "bids": bids})
 
 
 @app.post("/tenders/{tender_id}/bids")
@@ -98,16 +119,20 @@ def ranking_page(request: Request, tender_id: int):
     if not tender:
         raise HTTPException(status_code=404, detail="Tender not found")
     bids = list_bids_for_tender(tender_id)
-    ranked = rank_bids(
-        bids,
-        {
-            "price": 0.35,
-            "delivery_days": 0.25,
-            "vendor_score": 0.2,
-            "compliance_score": 0.2,
-        },
-    ) if bids else []
-    return templates.TemplateResponse(request, "ranking.html", {"tender": tender, "ranked": ranked})
+    ranked = (
+        rank_bids(
+            bids,
+            {
+                "price": 0.35,
+                "delivery_days": 0.25,
+                "vendor_score": 0.2,
+                "compliance_score": 0.2,
+            },
+        )
+        if bids
+        else []
+    )
+    return _template_response(request, "ranking.html", {"tender": tender, "ranked": ranked})
 
 
 @app.post("/tenders", response_model=Tender)
