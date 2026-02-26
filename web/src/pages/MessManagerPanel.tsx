@@ -1,12 +1,22 @@
-export function MessManagerPanel() {
+interface Props {
+  user: string;
+}
+
+export function MessManagerPanel({ user }: Props) {
   return (
-    <section>
-      <h2>Mess Manager Input Panel</h2>
-      <ul>
-        <li>Create meal-procurement requirements by quantity and date.</li>
-        <li>Submit demand notes for approval.</li>
-        <li>Track status: submitted / approved / rejected.</li>
-      </ul>
+    <section className="role-page">
+      <h3>Mess Manager Workspace</h3>
+      <p>{user}@nitj.ac.in can create daily/weekly requirement requests for approval.</p>
+      <div className="role-cards">
+        <article>
+          <h4>Create Demand</h4>
+          <p>Submit quantity and item details for mess operations.</p>
+        </article>
+        <article>
+          <h4>Track Approvals</h4>
+          <p>Monitor requests in submitted, approved, and rejected state.</p>
+        </article>
+      </div>
     </section>
   );
 }
