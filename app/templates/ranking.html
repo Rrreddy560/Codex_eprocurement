@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>DSS Ranking - Tender #{{ tender.id }} {{ tender.title }}</h2>
+<p>Default weights: price 35%, delivery 25%, vendor score 20%, compliance 20%.</p>
+{% if ranked %}
+<ol>
+  {% for bid, score in ranked %}
+    <li><strong>{{ bid.vendor_name }}</strong> - Score {{ score }}</li>
+  {% endfor %}
+</ol>
+{% else %}
+<p>No bids available for ranking.</p>
+{% endif %}
+{% endblock %}

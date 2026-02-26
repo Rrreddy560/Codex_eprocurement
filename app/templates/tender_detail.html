@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Tender #{{ tender.id }} - {{ tender.title }}</h2>
+<p>{{ tender.description }}</p>
+<p><strong>Budget:</strong> {{ tender.budget or '-' }} | <strong>Deadline:</strong> {{ tender.deadline or '-' }}</p>
+<p><a href="/tenders/{{ tender.id }}/ranking">View DSS Ranking</a></p>
+
+<section class="card">
+<h3>Submit Bid</h3>
+<form method="post" action="/tenders/{{ tender.id }}/bids" class="form-grid">
+  <label>Vendor Name<input name="vendor_name" required /></label>
+  <label>Price<input type="number" name="price" min="1" step="0.01" required /></label>
+  <label>Delivery Days<input type="number" name="delivery_days" min="1" required /></label>
+  <label>Vendor Score<input type="number" name="vendor_score" min="0" max="100" required /></label>
+  <label>Compliance Score<input type="number" name="compliance_score" min="0" max="100" required /></label>
+  <label>Notes<textarea name="notes"></textarea></label>
+  <button type="submit">Submit Bid</button>
+</form>
+</section>
+
+<section>
+<h3>Bids</h3>
+{% if bids %}
+<table>
+  <thead><tr><th>Vendor</th><th>Price</th><th>Delivery</th><th>Vendor Score</th><th>Compliance</th></tr></thead>
+  <tbody>
+    {% for bid in bids %}
+    <tr>
+      <td>{{ bid.vendor_name }}</td><td>{{ bid.price }}</td><td>{{ bid.delivery_days }}</td><td>{{ bid.vendor_score }}</td><td>{{ bid.compliance_score }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}<p>No bids submitted yet.</p>{% endif %}
+</section>
+{% endblock %}
