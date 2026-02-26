@@ -1,92 +1,51 @@
-# E-Procurement DSS Web App
+# E-Procurement DSS (TypeScript RBAC Edition)
 
-A runnable e-procurement platform with a Decision Support System (DSS) to evaluate bids and recommend winners.
+This version upgrades the project to a TypeScript architecture with role-based access for:
+- `mess_manager`
+- `management` (includes admin-panel capabilities)
+- `supplier`
 
-## What is included
+## What you now have
 
-- Web dashboard for procurement operations.
-- Tender management (create/list/view).
-- Bid submission per tender.
-- DSS ranking page for bid scoring.
-- REST APIs for integrations.
-- SQLite persistence for quick production-like behavior.
-- GitHub Actions CI pipeline for tests.
+- **TypeScript backend** (`src/`) using Express + Zod.
+- **RBAC guard layer** with permission checks per role.
+- **Management admin endpoints** for approvals and audit logs.
+- **Supplier bid workflow** and mess-manager input workflow.
+- **TypeScript React frontend skeleton** (`web/`) with role-specific panels.
 
-## Architecture
-
-- **Backend/UI:** FastAPI + Jinja templates
-- **Database:** SQLite (`eprocurement.db`)
-- **DSS Engine:** Weighted normalized scoring
-- **Container:** Dockerfile + docker-compose
-
-## Run locally
+## Backend quick start
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+npm install
+npm run dev
 ```
 
-Open:
-- UI: http://localhost:8000/
-- API docs: http://localhost:8000/docs
+Server runs on `http://localhost:8080`.
 
-## Run with helper commands
-
-```bash
-make install
-make run
-make test
-```
-
-## Run with Docker
-
-```bash
-docker build -t eproc-dss .
-docker run --rm -p 8000:8000 eproc-dss
-# or
-docker compose up --build
-```
-
-## Core pages
-
-- `/` dashboard
-- `/tenders/new` create tender
-- `/tenders/{id}` tender details + bid form
-- `/tenders/{id}/ranking` DSS ranking
-
-## Core APIs
+### Key API routes
 
 - `GET /health`
-- `POST /tenders`
-- `GET /tenders`
-- `POST /bids`
-- `POST /dss/rank/{tender_id}`
+- `GET /api/dashboard`
+- `GET /api/requirements`
+- `POST /api/requirements` (mess_manager)
+- `POST /api/requirements/:requirementId/decision` (management)
+- `GET /api/bids` (management/supplier)
+- `POST /api/bids` (supplier)
+- `GET /api/admin/audit-log` (management admin panel)
 
-## Upload this to your GitHub repository
+Use headers in requests:
+- `x-user-role: mess_manager | management | supplier`
+- `x-user-name: <display-name>`
 
-```bash
-git init
-git add .
-git commit -m "Initial eprocurement DSS app"
-git branch -M main
-git remote add origin <YOUR_GITHUB_REPO_URL>
-git push -u origin main
-```
-
-If this repo already exists remotely:
+## Frontend quick start
 
 ```bash
-git add .
-git commit -m "Update eprocurement DSS app"
-git push
+cd web
+npm install
+npm run dev
 ```
 
-## Launch checklist
+Frontend runs on Vite (default `http://localhost:5173`).
 
-1. Add authentication and role permissions.
-2. Add approval workflow states (draft/review/approved/awarded).
-3. Add audit logs and policy checks.
-4. Move SQLite to PostgreSQL for scale.
-5. Add CI/CD and production deployment.
+## Note
+If you share your detailed step-by-step sheet next, I can map each workflow directly into screens, DB tables, and APIs.
